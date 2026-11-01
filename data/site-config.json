@@ -11,16 +11,36 @@
     "primaryBrown": "#3b2219",
     "darkEspresso": "#20120d",
     "softPink": "#fdf2f4",
-    "accentRose": "#e07a8b",
-    "goldAccent": "#c59b6d"
+    "accentRose": "#e07a8b"
   },
   "blocks": {
-    "announcementBar": { "enabled": true, "title": "Aksiya e'loni" },
-    "heroBanner": { "enabled": true, "title": "Bosh banner (Hero)" },
-    "categoryChips": { "enabled": true, "title": "Kategoriyalar saralashi" },
-    "filtersBar": { "enabled": true, "title": "Filtrlar va saralash paneli" },
-    "productGrid": { "enabled": true, "title": "Mahsulotlar katalogi" },
-    "featuresBar": { "enabled": true, "title": "Afzalliklar bo'limi (Kafolat, Yetkazish)" },
-    "footer": { "enabled": true, "title": "Sayt pastki qismi (Footer)" }
+    "announcementBar": {
+      "enabled": true,
+      "title": "Aksiya e'loni"
+    },
+    "heroBanner": {
+      "enabled": true,
+      "title": "Bosh banner (Hero)"
+    },
+    "categoryChips": {
+      "enabled": true,
+      "title": "Kategoriyalar saralashi"
+    },
+    "filtersBar": {
+      "enabled": true,
+      "title": "Filtrlar va saralash paneli"
+    },
+    "productGrid": {
+      "enabled": true,
+      "title": "Mahsulotlar katalogi"
+    },
+    "featuresBar": {
+      "enabled": true,
+      "title": "Afzalliklar bo'limi (Kafolat, Yetkazish)"
+    },
+    "footer": {
+      "enabled": true,
+      "title": "Sayt pastki qismi (Footer)"
+    }
   }
 }
