@@ -1,0 +1,56 @@
+[
+  {
+    "id": "1793548462924_q3nif",
+    "sender": "Mijoz",
+    "role": "customer",
+    "userId": "guest",
+    "text": "Yetkazib berish qancha vaqt oladi?",
+    "time": "20:54",
+    "createdAt": "2026-11-01T15:54:23.096Z"
+  },
+  {
+    "id": "1793548463925_auto",
+    "sender": "WS Konsultant (Admin)",
+    "role": "admin",
+    "userId": "admin_auto",
+    "text": "Toshkent bo'ylab yetkazib berish 3-6 soat ichida, butun O'zbekiston viloyatlari bo'ylab esa 24 soat ichida bepul yetkaziladi! Kuryer yetib kelishidan oldin sizga qo'ng'iroq qiladi.",
+    "time": "20:54",
+    "createdAt": "2026-11-01T15:54:23.926Z"
+  },
+  {
+    "id": "1793548480611_ehgih",
+    "sender": "Mijoz",
+    "role": "customer",
+    "userId": "guest",
+    "text": "Tovarni almashtirish yoki qaytarish shartlari qanday?",
+    "time": "20:54",
+    "createdAt": "2026-11-01T15:54:40.612Z"
+  },
+  {
+    "id": "1793548481419_auto",
+    "sender": "WS Konsultant (Admin)",
+    "role": "admin",
+    "userId": "admin_auto",
+    "text": "Agar tovar sizga ma'qul kelmasa yoki nuqsoni aniqlansa, 14 kun ichida qadoq saqlangan holda bepul almashtirib olishingiz yoki pulingizni qaytarib olishingiz mumkin.",
+    "time": "20:54",
+    "createdAt": "2026-11-01T15:54:41.420Z"
+  },
+  {
+    "id": "1793548483149_0sbr6",
+    "sender": "Mijoz",
+    "role": "customer",
+    "userId": "guest",
+    "text": "Tovarni almashtirish yoki qaytarish shartlari qanday?",
+    "time": "20:54",
+    "createdAt": "2026-11-01T15:54:43.149Z"
+  },
+  {
+    "id": "1793548483963_auto",
+    "sender": "WS Konsultant (Admin)",
+    "role": "admin",
+    "userId": "admin_auto",
+    "text": "Agar tovar sizga ma'qul kelmasa yoki nuqsoni aniqlansa, 14 kun ichida qadoq saqlangan holda bepul almashtirib olishingiz yoki pulingizni qaytarib olishingiz mumkin.",
+    "time": "20:54",
+    "createdAt": "2026-11-01T15:54:43.963Z"
+  }
+]

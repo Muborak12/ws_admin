@@ -1,0 +1,18 @@
+{
+  "siteName": "WS",
+  "brandTagline": "Luxury & Modern E-Commerce",
+  "heroTitle": "Eksklyuziv uslub va premium texnologiyalar",
+  "heroSubtitle": "WS platformasi orqali eng sara gadjetlar, aqlli uskunalar va nafis aksessuarlarni rasmiy kafolat hamda bepul yetkazib berish bilan kashf eting.",
+  "announcement": "WS maxsus mavsumiy kolleksiyasi va 30% gacha chegirmalar",
+  "phone": "+998 71 200 00 00",
+  "email": "contact@ws-store.uz",
+  "address": "Toshkent shahri, Amir Temur shox ko'chasi, WS Plaza",
+  "theme": {
+    "primaryBrown": "#3b2219",
+    "darkEspresso": "#23140f",
+    "softPink": "#fdf2f4",
+    "whisperPink": "#fae5e9",
+    "accentRose": "#e07a8b",
+    "goldAccent": "#c59b6d"
+  }
+}
