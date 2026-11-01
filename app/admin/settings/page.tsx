@@ -4,20 +4,17 @@ import React, { useState, useEffect } from "react";
 import {
   Palette,
   Save,
-  CheckCircle,
   Loader2,
-  Sparkles,
   Type,
   Phone,
-  Mail,
-  MapPin,
   UploadCloud,
   Terminal,
   LayoutTemplate,
   Eye,
   EyeOff,
-  Trash2,
   Layers,
+  GitBranch,
+  CheckCircle,
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 
@@ -38,6 +35,17 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [pushingGit, setPushingGit] = useState(false);
   const [gitLogs, setGitLogs] = useState<string[]>([]);
+
+  // Git State
+  const [gitRemoteUrl, setGitRemoteUrl] = useState("");
+  const [gitBranch, setGitBranch] = useState("main");
+  const [gitCommitMsg, setGitCommitMsg] = useState("");
+  const [gitInfo, setGitInfo] = useState<{
+    hasGit?: boolean;
+    remoteUrl?: string;
+    branch?: string;
+    lastCommit?: string;
+  } | null>(null);
 
   // Settings State
   const [siteName, setSiteName] = useState("WS");
@@ -66,7 +74,22 @@ export default function AdminSettingsPage() {
     footer: { enabled: true, title: "Sayt pastki qismi (Footer)" },
   });
 
+  const loadGitInfo = () => {
+    fetch("/api/admin/git-push")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data) {
+          setGitInfo(data);
+          if (data.remoteUrl) setGitRemoteUrl(data.remoteUrl);
+          if (data.branch) setGitBranch(data.branch);
+        }
+      })
+      .catch(() => {});
+  };
+
   useEffect(() => {
+    loadGitInfo();
+
     fetch("/api/settings")
       .then((r) => r.json())
       .then((data) => {
@@ -134,7 +157,7 @@ export default function AdminSettingsPage() {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success("Sayt tuzilishi, bloklari va ranglari muvaffaqiyatli saqlandi!");
+        toast.success("Sayt tuzilishi, bloklari va ranglari barcha jildlarga muvaffaqiyatli saqlandi!");
       } else {
         toast.error("Sozlamalarni saqlashda xatolik");
       }
@@ -153,7 +176,11 @@ export default function AdminSettingsPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          commitMessage: `WS Dizayn yangilanishlari: ${new Date().toLocaleString("uz-UZ")}`,
+          commitMessage:
+            gitCommitMsg.trim() ||
+            `WS Yangilanishlari: ${new Date().toLocaleString("uz-UZ")}`,
+          remoteUrl: gitRemoteUrl.trim() || undefined,
+          branch: gitBranch.trim() || "main",
         }),
       });
       const data = await res.json();
@@ -161,11 +188,12 @@ export default function AdminSettingsPage() {
         setGitLogs(data.logs);
       }
       if (data.success) {
-        toast.success(data.message || "Gitga push qilindi!");
+        toast.success(data.message || "Gitga muvaffaqiyatli push qilindi!");
+        loadGitInfo();
       } else {
         toast.error(data.error || "Git pushda xatolik");
       }
-    } catch (err: any) {
+    } catch {
       toast.error("Git amallarida xatolik yuz berdi");
     } finally {
       setPushingGit(false);
@@ -199,35 +227,98 @@ export default function AdminSettingsPage() {
             </p>
           </div>
         </div>
-
-        <button
-          onClick={handleGitPush}
-          disabled={pushingGit}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#c59b6d] to-[#8c583e] hover:opacity-95 text-white text-xs font-black shadow-lg shadow-[#8c583e]/30 transition-all disabled:opacity-50 border border-white/20"
-        >
-          {pushingGit ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <UploadCloud className="w-4 h-4" />
-          )}
-          <span>Gitga Avtomatik Push Qilish</span>
-        </button>
       </div>
 
-      {/* Git Logs Terminal Preview */}
-      {gitLogs.length > 0 && (
-        <div className="p-5 rounded-3xl bg-[#140b07] border border-[#fbcfe8]/20 font-mono text-xs space-y-1 shadow-inner">
-          <div className="flex items-center gap-2 text-[#e07a8b] font-bold mb-2 pb-2 border-b border-[#fbcfe8]/10">
-            <Terminal className="w-4 h-4" />
-            <span>Git Operatsiyalari Natijasi:</span>
-          </div>
-          {gitLogs.map((line, i) => (
-            <div key={i} className="text-[#fdf2f4]/80">
-              {line}
-            </div>
-          ))}
+      {/* GitHub / Git Push Section */}
+      <div className="p-6 rounded-3xl bg-[#25140d]/90 border border-[#fbcfe8]/15 shadow-xl space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+            <GitBranch className="w-4 h-4 text-[#e07a8b]" />
+            GitHub Repozitoriyasi & Avtomatik Push
+          </h2>
+          {gitInfo?.lastCommit && (
+            <span className="text-[11px] font-mono text-[#fbcfe8]/60 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
+              So'nggi commit: {gitInfo.lastCommit}
+            </span>
+          )}
         </div>
-      )}
+
+        <p className="text-xs text-[#fbcfe8]/70">
+          Admin panelda qilingan barcha o'zgarishlar (bloklar, ranglar, matnlar) ushbu tugma orqali to'g'ridan-to'g'ri GitHub repozitoriyangizga push qilinadi.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
+          <div className="sm:col-span-2">
+            <label className="block text-[11px] font-bold text-[#fbcfe8]/80 mb-1">
+              GitHub Repozitoriya URL (Remote origin)
+            </label>
+            <input
+              type="text"
+              value={gitRemoteUrl}
+              onChange={(e) => setGitRemoteUrl(e.target.value)}
+              placeholder="https://github.com/foydalanuvchi/repo-nomi.git"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#1c0f0a] border border-[#fbcfe8]/15 text-white text-xs font-mono focus:outline-none focus:border-[#e07a8b]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-[#fbcfe8]/80 mb-1">
+              Branch (Filial)
+            </label>
+            <input
+              type="text"
+              value={gitBranch}
+              onChange={(e) => setGitBranch(e.target.value)}
+              placeholder="main"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#1c0f0a] border border-[#fbcfe8]/15 text-white text-xs font-mono focus:outline-none focus:border-[#e07a8b]"
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="block text-[11px] font-bold text-[#fbcfe8]/80 mb-1">
+              Commit xabari (ixtiyoriy)
+            </label>
+            <input
+              type="text"
+              value={gitCommitMsg}
+              onChange={(e) => setGitCommitMsg(e.target.value)}
+              placeholder="WS yangilanishlari: Dizayn va sozlamalar"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#1c0f0a] border border-[#fbcfe8]/15 text-white text-xs focus:outline-none focus:border-[#e07a8b]"
+            />
+          </div>
+
+          <div className="flex items-end">
+            <button
+              type="button"
+              onClick={handleGitPush}
+              disabled={pushingGit}
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c59b6d] to-[#8c583e] hover:opacity-95 text-white text-xs font-black shadow-lg shadow-[#8c583e]/30 transition-all disabled:opacity-50 border border-white/20 flex items-center justify-center gap-2"
+            >
+              {pushingGit ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <UploadCloud className="w-4 h-4" />
+              )}
+              <span>Gitga Avtomatik Push Qilish</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Git Logs Terminal Preview */}
+        {gitLogs.length > 0 && (
+          <div className="p-4 rounded-2xl bg-[#140b07] border border-[#fbcfe8]/20 font-mono text-xs space-y-1 shadow-inner mt-3">
+            <div className="flex items-center gap-2 text-[#e07a8b] font-bold mb-2 pb-1.5 border-b border-[#fbcfe8]/10">
+              <Terminal className="w-3.5 h-3.5" />
+              <span>Git Operatsiyalari Natijasi:</span>
+            </div>
+            {gitLogs.map((line, i) => (
+              <div key={i} className="text-[#fdf2f4]/80 text-[11px]">
+                {line}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Settings Form */}
       <form onSubmit={handleSaveSettings} className="space-y-6">

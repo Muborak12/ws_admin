@@ -17,9 +17,10 @@ import {
   ChevronRight,
   MessageSquare,
   Palette,
-  GitBranch,
   UploadCloud,
-  CheckCircle,
+  Lock,
+  KeyRound,
+  ArrowRight,
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 
@@ -45,11 +46,40 @@ export default function AdminLayout({
 
   const [pushingGit, setPushingGit] = useState(false);
 
+  // Security Passcode Protection (Secret password: ws2012)
+  const [isPasscodeVerified, setIsPasscodeVerified] = useState<boolean | null>(null);
+  const [passcodeInput, setPasscodeInput] = useState("");
+  const [passcodeError, setPasscodeError] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedPass = sessionStorage.getItem("ws_admin_passcode");
+      if (savedPass === "ws2012") {
+        setIsPasscodeVerified(true);
+      } else {
+        setIsPasscodeVerified(false);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
       router.push("/login");
     }
   }, [loading, user, isAdmin, router]);
+
+  const handleVerifyPasscode = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passcodeInput.trim() === "ws2012") {
+      sessionStorage.setItem("ws_admin_passcode", "ws2012");
+      setIsPasscodeVerified(true);
+      setPasscodeError("");
+      toast.success("Xavfsizlik kaliti tasdiqlandi! Admin panelga xush kelibsiz.");
+    } else {
+      setPasscodeError("Maxsus kirish paroli noto'g'ri! Qayta urinib ko'ring.");
+      toast.error("Xavfsizlik paroli noto'g'ri!");
+    }
+  };
 
   const handleGitPush = async () => {
     if (!confirm("Barcha o'zgarishlarni Git repozitoriyasiga push qilishni xohlaysizmi?")) return;
@@ -68,14 +98,14 @@ export default function AdminLayout({
       } else {
         toast.error(data.error || "Git pushda xatolik");
       }
-    } catch (err: any) {
+    } catch {
       toast.error("Git amallarini bajarishda xatolik yuz berdi");
     } finally {
       setPushingGit(false);
     }
   };
 
-  if (loading) {
+  if (loading || isPasscodeVerified === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#1c0f0a] text-[#fdf2f4]">
         <Loader2 className="w-8 h-8 text-[#e07a8b] animate-spin" />
@@ -99,6 +129,77 @@ export default function AdminLayout({
         >
           WS do'koni bosh sahifasiga qaytish
         </Link>
+      </div>
+    );
+  }
+
+  // If secret passcode ws2012 is not verified yet
+  if (!isPasscodeVerified) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-[#140b07] text-[#fdf2f4] relative overflow-hidden">
+        {/* Ambient Glows */}
+        <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-[#e07a8b]/15 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 -right-20 w-96 h-96 rounded-full bg-[#3b2219]/40 blur-3xl pointer-events-none" />
+
+        <div className="w-full max-w-md p-8 sm:p-10 rounded-3xl bg-[#25140d]/95 border border-[#fbcfe8]/20 backdrop-blur-2xl shadow-2xl space-y-6 relative z-10 text-center">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-[#3b2219] to-[#e07a8b] p-0.5 mx-auto shadow-xl">
+            <div className="w-full h-full rounded-[22px] bg-[#1c0f0a] flex items-center justify-center">
+              <Lock className="w-7 h-7 text-[#e07a8b]" />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <h1 className="text-xl font-black text-white tracking-tight">
+              WS Maxsus Xavfsizlik Kirishi
+            </h1>
+            <p className="text-xs text-[#fbcfe8]/70 leading-relaxed">
+              Admin panelga hamma ham kira olmasligi uchun maxsus xavfsizlik parolini kiriting.
+            </p>
+          </div>
+
+          <form onSubmit={handleVerifyPasscode} className="space-y-4 text-left">
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#fbcfe8]/80 mb-2 flex items-center gap-1.5">
+                <KeyRound className="w-3.5 h-3.5 text-[#e07a8b]" />
+                Maxsus Parol
+              </label>
+              <input
+                type="password"
+                required
+                autoFocus
+                value={passcodeInput}
+                onChange={(e) => {
+                  setPasscodeInput(e.target.value);
+                  setPasscodeError("");
+                }}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 rounded-2xl bg-[#170c07] border border-[#fbcfe8]/20 text-white placeholder-[#fbcfe8]/30 text-sm focus:outline-none focus:border-[#e07a8b] transition-all font-mono tracking-widest text-center"
+              />
+              {passcodeError && (
+                <p className="text-xs text-rose-400 mt-2 font-medium">
+                  {passcodeError}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#e07a8b] to-[#3b2219] hover:opacity-95 text-white font-black text-xs sm:text-sm shadow-xl shadow-[#3b2219]/60 transition-all flex items-center justify-center gap-2 border border-white/10"
+            >
+              <span>Tasdiqlash va Kirish</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </form>
+
+          <div className="pt-2 border-t border-[#fbcfe8]/10 text-center">
+            <Link
+              href="/"
+              className="text-xs text-[#fbcfe8]/60 hover:text-white transition-colors"
+            >
+              ← Mijoz do'koniga qaytish
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -212,7 +313,10 @@ export default function AdminLayout({
             </div>
 
             <button
-              onClick={logout}
+              onClick={() => {
+                sessionStorage.removeItem("ws_admin_passcode");
+                logout();
+              }}
               className="p-1.5 text-[#fbcfe8]/60 hover:text-rose-400 rounded-lg hover:bg-white/10 transition-colors"
               title="Chiqish"
             >
