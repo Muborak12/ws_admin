@@ -52,5 +52,23 @@
     "text": "Agar tovar sizga ma'qul kelmasa yoki nuqsoni aniqlansa, 14 kun ichida qadoq saqlangan holda bepul almashtirib olishingiz yoki pulingizni qaytarib olishingiz mumkin.",
     "time": "20:54",
     "createdAt": "2026-11-01T15:54:43.963Z"
+  },
+  {
+    "id": "1793549608346_gwcuc7",
+    "sender": "Mijoz",
+    "role": "customer",
+    "userId": "guest",
+    "text": "qanday qilib olaman",
+    "time": "21:13",
+    "createdAt": "2026-11-01T16:13:28.522Z"
+  },
+  {
+    "id": "1793549616684_fdiqx7",
+    "sender": "Admin",
+    "role": "admin",
+    "userId": "1",
+    "text": "shunchaki",
+    "time": "21:13",
+    "createdAt": "2026-11-01T16:13:36.685Z"
   }
 ]

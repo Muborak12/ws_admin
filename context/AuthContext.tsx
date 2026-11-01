@@ -42,12 +42,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(userData);
       setToken(storedToken);
       localStorage.setItem("authUser", JSON.stringify(userData));
-    } catch {
-      setUser(null);
-      setToken(null);
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("authUser");
+    } catch (err: any) {
+      // Faqat 401 (token yaroqsiz) bo'lsa sessiyani o'chiramiz
+      if (err?.response?.status === 401) {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("authUser");
+      }
     } finally {
       setLoading(false);
     }

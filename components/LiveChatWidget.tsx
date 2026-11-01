@@ -6,9 +6,6 @@ import {
   X,
   Send,
   Sparkles,
-  CheckCheck,
-  Bot,
-  UserCheck,
   HelpCircle,
   Minimize2,
 } from "lucide-react";
@@ -28,7 +25,7 @@ const QUICK_QUESTIONS = [
   "Yetkazib berish qancha vaqt oladi?",
   "Kafolat bormi va qanday shartlarda?",
   "Bo'lib to'lash (muddatli to'lov) mavjudmi?",
-  "Bugun buyurtma bersam qachon keladi?",
+  "Bugun buyurtma bersam qachon yetib keladi?",
   "Tovarni almashtirish yoki qaytarish shartlari qanday?",
 ];
 
@@ -42,17 +39,23 @@ export default function LiveChatWidget() {
 
   const socketRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isOpenRef = useRef(isOpen);
 
-  // Auto scroll
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
-    scrollToBottom();
+    if (isOpen) {
+      scrollToBottom();
+    }
   }, [messages, isOpen]);
 
-  // Load history from API route on mount
+  // Initial load
   useEffect(() => {
     fetch("/api/chat")
       .then((res) => res.json())
@@ -60,13 +63,12 @@ export default function LiveChatWidget() {
         if (Array.isArray(data) && data.length > 0) {
           setMessages(data);
         } else {
-          // Welcome default greeting
           setMessages([
             {
-              id: "welcome",
+              id: "welcome_init",
               sender: "WS Konsultant",
               role: "admin",
-              text: "Assalomu alaykum! WS rasmiy do'koniga xush kelibsiz. Sizga mahsulot tanlashda yoki yetkazib berishda qanday yordam bera olamiz? Quyidagi tayyor savollardan birini tanlashingiz yoki o'zingiz yozishingiz mumkin.",
+              text: "Assalomu alaykum! WS do'konimizga xush kelibsiz. Savollaringiz bormi? Quyidagi variantlardan birini tanlashingiz yoki to'g'ridan-to'g'ri yozishingiz mumkin. Admin sizga javob beradi.",
               time: new Date().toLocaleTimeString("uz-UZ", {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -78,24 +80,22 @@ export default function LiveChatWidget() {
       .catch(() => {});
   }, []);
 
-  // Connect to WebSocket server
+  // Connect WebSocket ONLY ONCE per user
   useEffect(() => {
-    let ws: WebSocket;
-    let reconnectTimeout: any;
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: any = null;
 
     function connect() {
       try {
-        const wsUrl =
-          typeof window !== "undefined" && window.location.hostname
-            ? `ws://${window.location.hostname}:3005`
-            : "ws://localhost:3005";
+        const hostname = typeof window !== "undefined" ? window.location.hostname : "localhost";
+        const wsUrl = `ws://${hostname}:3005`;
 
         ws = new WebSocket(wsUrl);
         socketRef.current = ws;
 
         ws.onopen = () => {
           setIsConnected(true);
-          ws.send(
+          ws?.send(
             JSON.stringify({
               type: "REGISTER",
               role: "customer",
@@ -112,9 +112,16 @@ export default function LiveChatWidget() {
               if (data.messages.length > 0) {
                 setMessages(data.messages);
               }
-            } else if (data.type === "NEW_MESSAGE") {
-              setMessages((prev) => [...prev, data.message]);
-              if (!isOpen) {
+            } else if (data.type === "NEW_MESSAGE" && data.message) {
+              setMessages((prev) => {
+                // Deduplicate by ID
+                if (prev.some((m) => m.id === data.message.id)) {
+                  return prev;
+                }
+                return [...prev, data.message];
+              });
+
+              if (!isOpenRef.current && data.message.role === "admin") {
                 setUnreadCount((c) => c + 1);
               }
             }
@@ -123,14 +130,13 @@ export default function LiveChatWidget() {
 
         ws.onclose = () => {
           setIsConnected(false);
-          // Auto reconnect after 3 seconds
-          reconnectTimeout = setTimeout(connect, 3000);
+          reconnectTimeout = setTimeout(connect, 3500);
         };
 
         ws.onerror = () => {
           setIsConnected(false);
         };
-      } catch (err) {
+      } catch {
         setIsConnected(false);
       }
     }
@@ -139,27 +145,29 @@ export default function LiveChatWidget() {
 
     return () => {
       clearTimeout(reconnectTimeout);
-      if (socketRef.current) socketRef.current.close();
+      if (ws) ws.close();
     };
-  }, [user?.id, user?.name, isOpen]);
+  }, [user?.id, user?.name]);
 
   const handleSendMessage = (textToSend?: string) => {
     const text = (textToSend || inputText).trim();
     if (!text) return;
 
+    const messageId = Date.now() + "_" + Math.random().toString(36).slice(2, 8);
     const payload = {
       type: "SEND_MESSAGE",
+      id: messageId,
       sender: user?.name || "Mijoz",
       role: "customer",
       userId: user?.id ? String(user.id) : "guest",
       text,
     };
 
-    // If WS connected
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      // Faqat bitta marta WebSocket orqali jo'natiladi
       socketRef.current.send(JSON.stringify(payload));
     } else {
-      // Fallback: send via REST API
+      // WebSocket mavjud bo'lmasa REST fallback
       fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -168,7 +176,9 @@ export default function LiveChatWidget() {
         .then((r) => r.json())
         .then((res) => {
           if (res.message) {
-            setMessages((prev) => [...prev, res.message]);
+            setMessages((prev) =>
+              prev.some((m) => m.id === res.message.id) ? prev : [...prev, res.message]
+            );
           }
         });
     }
@@ -190,7 +200,11 @@ export default function LiveChatWidget() {
         >
           <div className="relative">
             <MessageCircle className="w-6 h-6 text-[#fdf2f4]" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#3b2219]" />
+            <span
+              className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-[#3b2219] ${
+                isConnected ? "bg-emerald-400" : "bg-amber-400"
+              }`}
+            />
           </div>
           <span className="text-xs font-bold tracking-wide hidden sm:inline text-white">
             WS Yordamchi
@@ -221,10 +235,14 @@ export default function LiveChatWidget() {
                   <h3 className="text-sm font-black tracking-tight text-white">
                     WS Jonli Chat
                   </h3>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      isConnected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+                    }`}
+                  />
                 </div>
                 <p className="text-[11px] text-[#fbcfe8]/70">
-                  {isConnected ? "Admin & Konsultant onlayn" : "Ulanmoqda..."}
+                  {isConnected ? "Admin onlayn (To'g'ridan-to'g'ri aloqa)" : "Serverga ulanmoqda..."}
                 </p>
               </div>
             </div>
@@ -248,7 +266,7 @@ export default function LiveChatWidget() {
                 >
                   <div className="flex items-center gap-1.5 mb-1 px-1">
                     <span className="text-[10px] font-semibold text-[#fbcfe8]/60">
-                      {isMe ? "Siz" : msg.sender || "WS Admin"}
+                      {isMe ? "Siz" : `👑 ${msg.sender || "WS Admin"}`}
                     </span>
                     <span className="text-[9px] text-white/30 font-mono">
                       {msg.time}
@@ -274,7 +292,7 @@ export default function LiveChatWidget() {
           <div className="p-3 bg-[#20120d]/80 border-t border-[#fbcfe8]/10 space-y-1.5">
             <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#fbcfe8]/80">
               <HelpCircle className="w-3.5 h-3.5 text-[#e07a8b]" />
-              <span>Tezkor savol tanlash:</span>
+              <span>Tezkor savol yuborish:</span>
             </div>
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
               {QUICK_QUESTIONS.map((q, idx) => (

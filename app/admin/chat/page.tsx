@@ -87,8 +87,12 @@ export default function AdminChatPage() {
             const data = JSON.parse(event.data);
             if (data.type === "INIT_HISTORY" && Array.isArray(data.messages)) {
               if (data.messages.length > 0) setMessages(data.messages);
-            } else if (data.type === "NEW_MESSAGE") {
-              setMessages((prev) => [...prev, data.message]);
+            } else if (data.type === "NEW_MESSAGE" && data.message) {
+              setMessages((prev) =>
+                prev.some((m) => m.id === data.message.id)
+                  ? prev
+                  : [...prev, data.message]
+              );
               if (data.message.role === "customer") {
                 toast.info(`Mijozdan yangi xabar: "${data.message.text.slice(0, 30)}..."`);
               }

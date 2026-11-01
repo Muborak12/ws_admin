@@ -13,8 +13,23 @@ import {
   MapPin,
   UploadCloud,
   Terminal,
+  LayoutTemplate,
+  Eye,
+  EyeOff,
+  Trash2,
+  Layers,
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
+
+interface LayoutBlocks {
+  announcementBar: { enabled: boolean; title: string };
+  heroBanner: { enabled: boolean; title: string };
+  categoryChips: { enabled: boolean; title: string };
+  filtersBar: { enabled: boolean; title: string };
+  productGrid: { enabled: boolean; title: string };
+  featuresBar: { enabled: boolean; title: string };
+  footer: { enabled: boolean; title: string };
+}
 
 export default function AdminSettingsPage() {
   const toast = useToast();
@@ -36,9 +51,20 @@ export default function AdminSettingsPage() {
 
   // Colors
   const [primaryBrown, setPrimaryBrown] = useState("#3b2219");
-  const [darkEspresso, setDarkEspresso] = useState("#23140f");
+  const [darkEspresso, setDarkEspresso] = useState("#20120d");
   const [softPink, setSoftPink] = useState("#fdf2f4");
   const [accentRose, setAccentRose] = useState("#e07a8b");
+
+  // Layout Blocks (Stitch AI style visual toggles)
+  const [blocks, setBlocks] = useState<LayoutBlocks>({
+    announcementBar: { enabled: true, title: "Aksiya e'loni" },
+    heroBanner: { enabled: true, title: "Bosh banner (Hero)" },
+    categoryChips: { enabled: true, title: "Kategoriyalar saralashi" },
+    filtersBar: { enabled: true, title: "Filtrlar va saralash paneli" },
+    productGrid: { enabled: true, title: "Mahsulotlar katalogi" },
+    featuresBar: { enabled: true, title: "Afzalliklar bo'limi (Kafolat, Yetkazish)" },
+    footer: { enabled: true, title: "Sayt pastki qismi (Footer)" },
+  });
 
   useEffect(() => {
     fetch("/api/settings")
@@ -56,14 +82,28 @@ export default function AdminSettingsPage() {
 
           if (data.theme) {
             setPrimaryBrown(data.theme.primaryBrown || "#3b2219");
-            setDarkEspresso(data.theme.darkEspresso || "#23140f");
+            setDarkEspresso(data.theme.darkEspresso || "#20120d");
             setSoftPink(data.theme.softPink || "#fdf2f4");
             setAccentRose(data.theme.accentRose || "#e07a8b");
+          }
+
+          if (data.blocks) {
+            setBlocks(data.blocks);
           }
         }
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const toggleBlock = (key: keyof LayoutBlocks) => {
+    setBlocks((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        enabled: !prev[key].enabled,
+      },
+    }));
+  };
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +124,7 @@ export default function AdminSettingsPage() {
           softPink,
           accentRose,
         },
+        blocks,
       };
 
       const res = await fetch("/api/settings", {
@@ -93,7 +134,7 @@ export default function AdminSettingsPage() {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success("Sayt ma'lumotlari va ranglari muvaffaqiyatli saqlandi!");
+        toast.success("Sayt tuzilishi, bloklari va ranglari muvaffaqiyatli saqlandi!");
       } else {
         toast.error("Sozlamalarni saqlashda xatolik");
       }
@@ -112,7 +153,7 @@ export default function AdminSettingsPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          commitMessage: `WS Admin yangilanishlari: ${new Date().toLocaleString("uz-UZ")}`,
+          commitMessage: `WS Dizayn yangilanishlari: ${new Date().toLocaleString("uz-UZ")}`,
         }),
       });
       const data = await res.json();
@@ -140,7 +181,7 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl w-full mx-auto space-y-8">
+    <div className="p-8 max-w-5xl w-full mx-auto space-y-8 bg-[#1c0f0a] min-h-screen text-[#fdf2f4]">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 p-6 rounded-3xl bg-[#281813]/90 border border-[#fbcfe8]/15 shadow-xl">
         <div className="flex items-center gap-3">
@@ -151,10 +192,10 @@ export default function AdminSettingsPage() {
           </div>
           <div>
             <h1 className="text-xl font-black text-white">
-              Dizayn & Sayt Sozlamalari Boshqaruvi
+              Dizayn, Tuzilishi (Layout) & Sozlamalar
             </h1>
             <p className="text-xs text-[#fbcfe8]/70">
-              Saytning barcha matnlari, ranglari va Git sinxronizatsiyasi
+              Sayt bloklarini tahrirlash, olib tashlash va Gitga avtomatik push qilish
             </p>
           </div>
         </div>
@@ -173,7 +214,7 @@ export default function AdminSettingsPage() {
         </button>
       </div>
 
-      {/* Git Logs Terminal Preview (if logs exist) */}
+      {/* Git Logs Terminal Preview */}
       {gitLogs.length > 0 && (
         <div className="p-5 rounded-3xl bg-[#140b07] border border-[#fbcfe8]/20 font-mono text-xs space-y-1 shadow-inner">
           <div className="flex items-center gap-2 text-[#e07a8b] font-bold mb-2 pb-2 border-b border-[#fbcfe8]/10">
@@ -191,6 +232,62 @@ export default function AdminSettingsPage() {
       {/* Settings Form */}
       <form onSubmit={handleSaveSettings} className="space-y-6">
         
+        {/* Stitch AI Style: Layout Block Editor */}
+        <div className="p-6 rounded-3xl bg-[#25140d]/90 border border-[#fbcfe8]/15 shadow-xl space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+              <LayoutTemplate className="w-4 h-4 text-[#e07a8b]" />
+              Sayt Tuzilishi (Layout Bloklari: Yoqish / Olib Tashlash)
+            </h2>
+            <span className="text-[11px] text-[#fbcfe8]/60 font-medium">
+              Xohlagan qismni yoqishingiz yoki o'chirishingiz mumkin
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2">
+            {(Object.keys(blocks) as Array<keyof LayoutBlocks>).map((key) => {
+              const b = blocks[key];
+              return (
+                <div
+                  key={key}
+                  className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${
+                    b.enabled
+                      ? "bg-[#331a12] border-[#e07a8b]/40 text-white shadow-md"
+                      : "bg-[#1f0f0a] border-[#fbcfe8]/10 text-[#fbcfe8]/40 opacity-70"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Layers className="w-4 h-4 text-[#e07a8b] shrink-0" />
+                    <span className="text-xs font-bold truncate">{b.title}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => toggleBlock(key)}
+                    className={`p-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                      b.enabled
+                        ? "bg-[#e07a8b]/20 text-[#e07a8b] hover:bg-[#e07a8b]/30"
+                        : "bg-white/5 text-[#fbcfe8]/40 hover:text-white"
+                    }`}
+                  >
+                    {b.enabled ? (
+                      <>
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Faol</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="w-3.5 h-3.5" />
+                        <span>O'chirilgan</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Colors Palette Section */}
         <div className="p-6 rounded-3xl bg-[#25140d]/90 border border-[#fbcfe8]/15 shadow-xl space-y-4">
           <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
@@ -199,7 +296,6 @@ export default function AdminSettingsPage() {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Primary Brown */}
             <div className="p-4 rounded-2xl bg-[#1c0f0a] border border-[#fbcfe8]/10 space-y-2">
               <label className="block text-[11px] font-bold text-[#fbcfe8]/80">
                 Bosh Jigarrang (Primary)
@@ -217,7 +313,6 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            {/* Dark Espresso */}
             <div className="p-4 rounded-2xl bg-[#1c0f0a] border border-[#fbcfe8]/10 space-y-2">
               <label className="block text-[11px] font-bold text-[#fbcfe8]/80">
                 Quyuq Espresso Foni
@@ -235,7 +330,6 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            {/* Soft Pink */}
             <div className="p-4 rounded-2xl bg-[#1c0f0a] border border-[#fbcfe8]/10 space-y-2">
               <label className="block text-[11px] font-bold text-[#fbcfe8]/80">
                 Juda Och Pushti (Soft Pink)
@@ -253,7 +347,6 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            {/* Accent Rose */}
             <div className="p-4 rounded-2xl bg-[#1c0f0a] border border-[#fbcfe8]/10 space-y-2">
               <label className="block text-[11px] font-bold text-[#fbcfe8]/80">
                 Atirgul Pushti (Accent Rose)
@@ -345,7 +438,7 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
-        {/* Contact info section */}
+        {/* Contact Info Section */}
         <div className="p-6 rounded-3xl bg-[#25140d]/90 border border-[#fbcfe8]/15 shadow-xl space-y-4">
           <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
             <Phone className="w-4 h-4 text-[#e07a8b]" />
@@ -391,7 +484,7 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
-        {/* Submit */}
+        {/* Submit Button */}
         <div className="flex justify-end">
           <button
             type="submit"

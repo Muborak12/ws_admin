@@ -26,11 +26,18 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   // Dynamic Site Config (from Admin Settings)
-  const [siteConfig, setSiteConfig] = useState({
+  const [siteConfig, setSiteConfig] = useState<any>({
     siteName: "WS",
     heroTitle: "Eksklyuziv uslub va premium texnologiyalar",
     heroSubtitle: "WS platformasi orqali eng sara gadjetlar va nafis aksessuarlarni rasmiy kafolat bilan kashf eting.",
     announcement: "WS maxsus mavsumiy kolleksiyasi va 30% gacha chegirmalar",
+    blocks: {
+      announcementBar: { enabled: true },
+      heroBanner: { enabled: true },
+      categoryChips: { enabled: true },
+      filtersBar: { enabled: true },
+      productGrid: { enabled: true },
+    },
   });
 
   // Filters & Pagination State
@@ -111,86 +118,92 @@ export default function HomePage() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-12">
         {/* ================= HERO SECTION (BROWN & SOFT PINK) ================= */}
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#3b2219] via-[#2d1811] to-[#45271d] border border-[#fbcfe8]/20 p-8 sm:p-12 lg:p-16 shadow-2xl">
-          {/* Ambient Blush Pink Glows */}
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-[#e07a8b]/20 blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-[#c59b6d]/15 blur-3xl pointer-events-none" />
+        {siteConfig.blocks?.heroBanner?.enabled !== false && (
+          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#3b2219] via-[#2d1811] to-[#45271d] border border-[#fbcfe8]/20 p-8 sm:p-12 lg:p-16 shadow-2xl">
+            {/* Ambient Blush Pink Glows */}
+            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-[#e07a8b]/20 blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-[#c59b6d]/15 blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 max-w-2xl space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#fdf2f4]/10 border border-[#fbcfe8]/30 text-[#fbcfe8] text-xs font-bold backdrop-blur-md">
-              <Zap className="w-3.5 h-3.5 text-[#e07a8b] fill-[#e07a8b]" />
-              <span>{siteConfig.announcement}</span>
-            </div>
+            <div className="relative z-10 max-w-2xl space-y-6">
+              {siteConfig.blocks?.announcementBar?.enabled !== false && (
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#fdf2f4]/10 border border-[#fbcfe8]/30 text-[#fbcfe8] text-xs font-bold backdrop-blur-md">
+                  <Zap className="w-3.5 h-3.5 text-[#e07a8b] fill-[#e07a8b]" />
+                  <span>{siteConfig.announcement}</span>
+                </div>
+              )}
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-white">
-              {siteConfig.heroTitle}
-            </h1>
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-white">
+                {siteConfig.heroTitle}
+              </h1>
 
-            <p className="text-[#fbcfe8]/80 text-sm sm:text-base leading-relaxed">
-              {siteConfig.heroSubtitle}
-            </p>
+              <p className="text-[#fbcfe8]/80 text-sm sm:text-base leading-relaxed">
+                {siteConfig.heroSubtitle}
+              </p>
 
-            <div className="flex flex-wrap items-center gap-4 pt-2">
-              <a
-                href="#catalog"
-                className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-[#e07a8b] to-[#3b2219] hover:opacity-95 text-white font-extrabold text-sm shadow-xl shadow-[#3b2219]/60 transition-all flex items-center gap-2 group border border-[#fbcfe8]/20"
-              >
-                <span>Katalogni ko'rish</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </a>
+              <div className="flex flex-wrap items-center gap-4 pt-2">
+                <a
+                  href="#catalog"
+                  className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-[#e07a8b] to-[#3b2219] hover:opacity-95 text-white font-extrabold text-sm shadow-xl shadow-[#3b2219]/60 transition-all flex items-center gap-2 group border border-[#fbcfe8]/20"
+                >
+                  <span>Katalogni ko'rish</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </a>
 
-              <div className="flex items-center gap-2 text-xs text-[#fbcfe8]/70">
-                <Sparkles className="w-4 h-4 text-[#e07a8b]" />
-                <span>100% original sertifikatlangan tovarlar</span>
+                <div className="flex items-center gap-2 text-xs text-[#fbcfe8]/70">
+                  <Sparkles className="w-4 h-4 text-[#e07a8b]" />
+                  <span>100% original sertifikatlangan tovarlar</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* ================= CATEGORIES CHIPS ================= */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl font-black text-white tracking-tight flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-[#e07a8b]" />
-              Kategoriyalar bo'yicha saralash
-            </h2>
-            <span className="text-xs text-[#fbcfe8]/60 font-semibold">
-              {categories.length} ta kategoriya
-            </span>
-          </div>
+        {siteConfig.blocks?.categoryChips?.enabled !== false && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg sm:text-xl font-black text-white tracking-tight flex items-center gap-2">
+                <ShoppingBag className="w-5 h-5 text-[#e07a8b]" />
+                Kategoriyalar bo'yicha saralash
+              </h2>
+              <span className="text-xs text-[#fbcfe8]/60 font-semibold">
+                {categories.length} ta kategoriya
+              </span>
+            </div>
 
-          <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
-            <button
-              onClick={() => {
-                setSelectedCategory("all");
-                setPage(1);
-              }}
-              className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border ${
-                selectedCategory === "all"
-                  ? "bg-gradient-to-r from-[#e07a8b] to-[#3b2219] text-white border-[#fbcfe8]/40 shadow-lg shadow-[#3b2219]/40"
-                  : "bg-[#2d1912]/80 text-[#fbcfe8]/80 border-[#fbcfe8]/15 hover:border-[#e07a8b]/40 hover:text-white"
-              }`}
-            >
-              Barcha tovarlar
-            </button>
-            {categories.map((cat) => (
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
               <button
-                key={cat.id}
                 onClick={() => {
-                  setSelectedCategory(cat.id);
+                  setSelectedCategory("all");
                   setPage(1);
                 }}
                 className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border ${
-                  selectedCategory === cat.id
+                  selectedCategory === "all"
                     ? "bg-gradient-to-r from-[#e07a8b] to-[#3b2219] text-white border-[#fbcfe8]/40 shadow-lg shadow-[#3b2219]/40"
                     : "bg-[#2d1912]/80 text-[#fbcfe8]/80 border-[#fbcfe8]/15 hover:border-[#e07a8b]/40 hover:text-white"
                 }`}
               >
-                {cat.name}
+                Barcha tovarlar
               </button>
-            ))}
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setSelectedCategory(cat.id);
+                    setPage(1);
+                  }}
+                  className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border ${
+                    selectedCategory === cat.id
+                      ? "bg-gradient-to-r from-[#e07a8b] to-[#3b2219] text-white border-[#fbcfe8]/40 shadow-lg shadow-[#3b2219]/40"
+                      : "bg-[#2d1912]/80 text-[#fbcfe8]/80 border-[#fbcfe8]/15 hover:border-[#e07a8b]/40 hover:text-white"
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* ================= CATALOG WITH ADVANCED FILTERS ================= */}
         <div id="catalog" className="space-y-6 pt-2">
